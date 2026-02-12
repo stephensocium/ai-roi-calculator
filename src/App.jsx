@@ -41,10 +41,13 @@ export default function AIContactCenterROI() {
   // FTE utilization
   const ftePercentReduction = ftes > 0 ? (fteSavings / ftes) * 100 : 0;
 
-  const fmt = (n, decimals = 0) =>
+  // Formatting helpers — consistent across all displayed values
+  const fmtNum = (n, decimals = 0) =>
     n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
-  const fmtCurrency = (n) => '$' + fmt(n);
+  const fmtCurrency = (n) => '$' + fmtNum(Math.abs(n), 2);
+
+  const fmtPct = (n) => fmtNum(n, 0) + '%';
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 sm:p-6 bg-socium-background font-body min-h-screen">
@@ -153,30 +156,30 @@ export default function AIContactCenterROI() {
 
             <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 border border-socium-secondary">
               <p className="text-xs text-socium-accent uppercase tracking-wide mb-1">Net Annual Savings</p>
-              <p className="text-2xl font-heading font-bold text-socium-secondary">{fmtCurrency(netAnnualSavings)}</p>
+              <p className="text-2xl font-heading font-bold text-socium-secondary">{netAnnualSavings < 0 ? '-' : ''}{fmtCurrency(netAnnualSavings)}</p>
               <p className="text-xs text-socium-accent mt-1">After AI platform costs</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-socium-background rounded-lg p-3">
                 <p className="text-xs text-socium-accent uppercase tracking-wide mb-1">ROI</p>
-                <p className="text-xl font-heading font-bold text-socium-primary">{fmt(roiPercent, 0)}%</p>
+                <p className="text-xl font-heading font-bold text-socium-primary">{fmtPct(roiPercent)}</p>
               </div>
               <div className="bg-socium-background rounded-lg p-3">
                 <p className="text-xs text-socium-accent uppercase tracking-wide mb-1">Payback</p>
-                <p className="text-xl font-heading font-bold text-socium-primary">{fmt(paybackMonths, 1)} mo</p>
+                <p className="text-xl font-heading font-bold text-socium-primary">{fmtNum(paybackMonths, 1)} mo</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-socium-background rounded-lg p-3">
                 <p className="text-xs text-socium-accent uppercase tracking-wide mb-1">FTE Reduction</p>
-                <p className="text-xl font-heading font-bold text-socium-primary">{fmt(fteSavings, 1)}</p>
-                <p className="text-xs text-socium-accent">{fmt(ftePercentReduction, 0)}% of team</p>
+                <p className="text-xl font-heading font-bold text-socium-primary">{fmtNum(fteSavings, 1)}</p>
+                <p className="text-xs text-socium-accent">{fmtPct(ftePercentReduction)} of team</p>
               </div>
               <div className="bg-socium-background rounded-lg p-3">
                 <p className="text-xs text-socium-accent uppercase tracking-wide mb-1">Hours Saved</p>
-                <p className="text-xl font-heading font-bold text-socium-primary">{fmt(hoursAutomated)}</p>
+                <p className="text-xl font-heading font-bold text-socium-primary">{fmtNum(hoursAutomated)}</p>
                 <p className="text-xs text-socium-accent">per year</p>
               </div>
             </div>
@@ -192,21 +195,21 @@ export default function AIContactCenterROI() {
               <TrendingDown className="w-4 h-4" /> Savings Breakdown
             </h3>
             <div className="space-y-2">
-              <Row label="Current Labor Cost" value={`${fmtCurrency(currentLaborCost)} (${fmt(ftes, 1)} FTEs)`} />
-              <Row label="Annual Interaction Volume" value={`${fmt(annualVolume)} interactions`} />
-              <Row label="Total Handle Time" value={`${totalHandleTime} min (AHT ${aht} + ACW ${acw})`} />
-              <Row label="Automated Interactions" value={fmt(automatedInteractions)} highlight />
-              <Row label="Hours Automated" value={`${fmt(hoursAutomated)} hours`} />
+              <Row label="Current Labor Cost" value={`${fmtCurrency(currentLaborCost)} (${fmtNum(ftes, 1)} FTEs)`} />
+              <Row label="Annual Interaction Volume" value={`${fmtNum(annualVolume)} interactions`} />
+              <Row label="Total Handle Time" value={`${fmtNum(totalHandleTime)} min (AHT ${fmtNum(aht)} + ACW ${fmtNum(acw)})`} />
+              <Row label="Automated Interactions" value={fmtNum(automatedInteractions)} highlight />
+              <Row label="Hours Automated" value={`${fmtNum(hoursAutomated)} hours`} />
               {savingsCapped && (
                 <div className="text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded border border-amber-200">
-                  Capped at team capacity ({fmt(maxAvailableHours)} hrs). Theoretical: {fmt(theoreticalHoursAutomated)} hrs.
+                  Capped at team capacity ({fmtNum(maxAvailableHours)} hrs). Theoretical: {fmtNum(theoreticalHoursAutomated)} hrs.
                 </div>
               )}
               <Row label="Gross Labor Savings" value={fmtCurrency(annualLaborSavings)} />
-              <Row label="AI Platform Cost (Annual)" value={`- ${fmtCurrency(annualAiCost)}`} />
+              <Row label="AI Platform Cost (Annual)" value={`-${fmtCurrency(annualAiCost)}`} />
               <div className="flex justify-between items-center py-3 bg-red-50 px-3 rounded-lg mt-2 border border-socium-secondary">
                 <span className="text-sm font-heading font-bold text-socium-primary">NET ANNUAL SAVINGS</span>
-                <span className="font-heading font-bold text-socium-secondary text-lg">{fmtCurrency(netAnnualSavings)}</span>
+                <span className="font-heading font-bold text-socium-secondary text-lg">{netAnnualSavings < 0 ? '-' : ''}{fmtCurrency(netAnnualSavings)}</span>
               </div>
             </div>
           </div>
@@ -218,9 +221,9 @@ export default function AIContactCenterROI() {
                 <Percent className="w-4 h-4" /> Cost Per Interaction
               </h3>
               <div className="space-y-2">
-                <Row label="Current (Agent Only)" value={`$${fmt(costPerInteraction, 2)}`} />
-                <Row label="AI Automated" value={`$${fmt(aiCostPerInteraction, 2)}`} />
-                <Row label="Blended (After AI)" value={`$${fmt(blendedCostPerInteraction, 2)}`} highlight />
+                <Row label="Current (Agent Only)" value={fmtCurrency(costPerInteraction)} />
+                <Row label="AI Automated" value={fmtCurrency(aiCostPerInteraction)} />
+                <Row label="Blended (After AI)" value={fmtCurrency(blendedCostPerInteraction)} highlight />
               </div>
             </div>
 
@@ -229,10 +232,10 @@ export default function AIContactCenterROI() {
                 <Users className="w-4 h-4" /> Workforce Impact
               </h3>
               <div className="space-y-2">
-                <Row label="Current FTEs" value={fmt(ftes, 1)} />
-                <Row label="FTE Equivalent Savings" value={fmt(fteSavings, 1)} />
-                <Row label="Remaining FTE Need" value={fmt(Math.max(ftes - fteSavings, 0), 1)} highlight />
-                <Row label="Team Reduction" value={`${fmt(ftePercentReduction, 0)}%`} />
+                <Row label="Current FTEs" value={fmtNum(ftes, 1)} />
+                <Row label="FTE Equivalent Savings" value={fmtNum(fteSavings, 1)} />
+                <Row label="Remaining FTE Need" value={fmtNum(Math.max(ftes - fteSavings, 0), 1)} highlight />
+                <Row label="Team Reduction" value={fmtPct(ftePercentReduction)} />
               </div>
             </div>
           </div>
@@ -242,17 +245,17 @@ export default function AIContactCenterROI() {
         <div className="bg-socium-primary rounded-lg p-5 text-white mt-6">
           <h3 className="font-heading font-bold text-sm uppercase tracking-wide mb-3 text-socium-background">Executive Summary</h3>
           <p className="text-sm leading-relaxed">
-            With a <span className="font-bold text-socium-background">{containmentRate}% containment rate</span> across{' '}
-            <span className="font-bold text-socium-background">{fmt(annualVolume)}</span> annual interactions,
-            AI automation can resolve <span className="font-bold text-socium-background">{fmt(automatedInteractions)}</span> interactions
-            without agent involvement — eliminating <span className="font-bold text-socium-background">{fmt(hoursAutomated)}</span> labor hours
-            and reducing the team by <span className="font-bold text-socium-background">{fmt(fteSavings, 1)} FTEs</span> ({fmt(ftePercentReduction, 0)}% of the current {fmt(ftes, 0)} agents).
+            With a <span className="font-bold text-socium-background">{fmtPct(containmentRate)} containment rate</span> across{' '}
+            <span className="font-bold text-socium-background">{fmtNum(annualVolume)}</span> annual interactions,
+            AI automation can resolve <span className="font-bold text-socium-background">{fmtNum(automatedInteractions)}</span> interactions
+            without agent involvement — eliminating <span className="font-bold text-socium-background">{fmtNum(hoursAutomated)}</span> labor hours
+            and reducing the team by <span className="font-bold text-socium-background">{fmtNum(fteSavings, 1)} FTEs</span> ({fmtPct(ftePercentReduction)} of the current {fmtNum(ftes, 0)} agents).
             After accounting for <span className="font-bold text-socium-background">{fmtCurrency(annualAiCost)}</span> in annual platform costs,
-            net savings are <span className="font-bold text-rose-300">{fmtCurrency(netAnnualSavings)}</span> per year
-            with a <span className="font-bold text-socium-background">{fmt(roiPercent, 0)}% ROI</span> and{' '}
-            <span className="font-bold text-socium-background">{fmt(paybackMonths, 1)}-month payback</span>.
-            Cost per interaction drops from <span className="font-bold text-socium-background">${fmt(costPerInteraction, 2)}</span> to{' '}
-            <span className="font-bold text-socium-background">${fmt(blendedCostPerInteraction, 2)}</span> blended.
+            net savings are <span className="font-bold text-rose-300">{netAnnualSavings < 0 ? '-' : ''}{fmtCurrency(netAnnualSavings)}</span> per year
+            with a <span className="font-bold text-socium-background">{fmtPct(roiPercent)} ROI</span> and{' '}
+            <span className="font-bold text-socium-background">{fmtNum(paybackMonths, 1)}-month payback</span>.
+            Cost per interaction drops from <span className="font-bold text-socium-background">{fmtCurrency(costPerInteraction)}</span> to{' '}
+            <span className="font-bold text-socium-background">{fmtCurrency(blendedCostPerInteraction)}</span> blended.
           </p>
         </div>
 
