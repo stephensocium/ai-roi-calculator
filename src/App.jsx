@@ -15,25 +15,30 @@ export default function AIContactCenterROI() {
   const annualVolume = monthlyVolume * 12;
   const totalHandleTime = aht + acw; // minutes
   const automatedInteractions = annualVolume * (containmentRate / 100);
-  const hoursAutomated = (automatedInteractions * totalHandleTime) / 60;
-  const annualLaborSavings = hoursAutomated * agentRate;
-  const fteSavings = hoursAutomated / 2080; // standard work year
+  const theoreticalHoursAutomated = (automatedInteractions * totalHandleTime) / 60;
 
-  // New: FTE-aware calculations
+  // FTE-constrained calculations — savings can't exceed what the team actually costs
   const currentLaborCost = ftes * 2080 * agentRate;
+  const maxAvailableHours = ftes * 2080;
+  const hoursAutomated = Math.min(theoreticalHoursAutomated, maxAvailableHours);
+  const annualLaborSavings = Math.min(hoursAutomated * agentRate, currentLaborCost);
+  const fteSavings = hoursAutomated / 2080;
+  const savingsCapped = theoreticalHoursAutomated > maxAvailableHours;
+
+  // Cost per interaction
   const costPerInteraction = annualVolume > 0 ? currentLaborCost / annualVolume : 0;
   const aiCostPerInteraction = automatedInteractions > 0 ? (aiMonthlyCost * 12) / automatedInteractions : 0;
   const blendedCostPerInteraction = annualVolume > 0
     ? ((currentLaborCost - annualLaborSavings) + (aiMonthlyCost * 12)) / annualVolume
     : 0;
 
-  // New: ROI & payback
+  // ROI & payback
   const annualAiCost = aiMonthlyCost * 12;
   const netAnnualSavings = annualLaborSavings - annualAiCost;
   const roiPercent = annualAiCost > 0 ? ((netAnnualSavings) / annualAiCost) * 100 : 0;
   const paybackMonths = annualLaborSavings > 0 ? (annualAiCost / annualLaborSavings) * 12 : 0;
 
-  // New: FTE utilization
+  // FTE utilization
   const ftePercentReduction = ftes > 0 ? (fteSavings / ftes) * 100 : 0;
 
   const fmt = (n, decimals = 0) =>
@@ -187,10 +192,16 @@ export default function AIContactCenterROI() {
               <TrendingDown className="w-4 h-4" /> Savings Breakdown
             </h3>
             <div className="space-y-2">
+              <Row label="Current Labor Cost" value={`${fmtCurrency(currentLaborCost)} (${fmt(ftes, 1)} FTEs)`} />
               <Row label="Annual Interaction Volume" value={`${fmt(annualVolume)} interactions`} />
               <Row label="Total Handle Time" value={`${totalHandleTime} min (AHT ${aht} + ACW ${acw})`} />
               <Row label="Automated Interactions" value={fmt(automatedInteractions)} highlight />
               <Row label="Hours Automated" value={`${fmt(hoursAutomated)} hours`} />
+              {savingsCapped && (
+                <div className="text-xs text-amber-700 bg-amber-50 px-2 py-1.5 rounded border border-amber-200">
+                  Capped at team capacity ({fmt(maxAvailableHours)} hrs). Theoretical: {fmt(theoreticalHoursAutomated)} hrs.
+                </div>
+              )}
               <Row label="Gross Labor Savings" value={fmtCurrency(annualLaborSavings)} />
               <Row label="AI Platform Cost (Annual)" value={`- ${fmtCurrency(annualAiCost)}`} />
               <div className="flex justify-between items-center py-3 bg-red-50 px-3 rounded-lg mt-2 border border-socium-secondary">
