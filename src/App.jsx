@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DollarSign, Users, Clock, TrendingDown, Calculator, BarChart3, Percent, Zap } from 'lucide-react';
 
 export default function AIContactCenterROI() {
@@ -10,6 +10,25 @@ export default function AIContactCenterROI() {
   const [ftes, setFtes] = useState(20);
   const [containmentRate, setContainmentRate] = useState(25);
   const [aiMonthlyCost, setAiMonthlyCost] = useState(5000);
+
+  // Input change handler — strips non-numeric chars, avoids leading zeros
+  const handleNumChange = useCallback((setter, isFloat = false) => (e) => {
+    const raw = e.target.value.replace(/,/g, '');
+    if (raw === '' || raw === '-') { setter(0); return; }
+    const parsed = isFloat ? parseFloat(raw) : parseInt(raw, 10);
+    if (!isNaN(parsed)) setter(parsed);
+  }, []);
+
+  // Format input display value with commas (but allow decimal for floats)
+  const fmtInput = (n, isFloat = false) => {
+    if (isFloat) {
+      const str = String(n);
+      const [whole, dec] = str.split('.');
+      const fmtWhole = Number(whole).toLocaleString('en-US');
+      return dec !== undefined ? `${fmtWhole}.${dec}` : fmtWhole;
+    }
+    return n.toLocaleString('en-US');
+  };
 
   // Calculations
   const annualVolume = monthlyVolume * 12;
@@ -76,14 +95,14 @@ export default function AIContactCenterROI() {
                 <label className="block text-xs font-semibold text-socium-accent mb-1">
                   <Clock className="w-3 h-3 inline mr-1" />AHT (min)
                 </label>
-                <input type="number" value={aht} onChange={(e) => setAht(parseFloat(e.target.value) || 0)}
+                <input type="text" inputMode="decimal" value={fmtInput(aht)} onChange={handleNumChange(setAht)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-socium-secondary focus:border-transparent text-sm" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-socium-accent mb-1">
                   <Clock className="w-3 h-3 inline mr-1" />ACW (min)
                 </label>
-                <input type="number" value={acw} onChange={(e) => setAcw(parseFloat(e.target.value) || 0)}
+                <input type="text" inputMode="decimal" value={fmtInput(acw)} onChange={handleNumChange(setAcw)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-socium-secondary focus:border-transparent text-sm" />
               </div>
             </div>
@@ -94,16 +113,14 @@ export default function AIContactCenterROI() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-socium-accent text-sm">$</span>
-                <input type="number" step="0.01" value={agentRate}
-                  onChange={(e) => setAgentRate(parseFloat(e.target.value) || 0)}
+                <input type="text" inputMode="decimal" value={fmtInput(agentRate, true)} onChange={handleNumChange(setAgentRate, true)}
                   className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-socium-secondary focus:border-transparent text-sm" />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-socium-accent mb-1">Monthly Interaction Volume</label>
-              <input type="number" value={monthlyVolume}
-                onChange={(e) => setMonthlyVolume(parseInt(e.target.value) || 0)}
+              <input type="text" inputMode="numeric" value={fmtInput(monthlyVolume)} onChange={handleNumChange(setMonthlyVolume)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-socium-secondary focus:border-transparent text-sm" />
             </div>
 
@@ -111,8 +128,7 @@ export default function AIContactCenterROI() {
               <label className="block text-xs font-semibold text-socium-accent mb-1">
                 <Users className="w-3 h-3 inline mr-1" />Current Agents (FTEs)
               </label>
-              <input type="number" value={ftes}
-                onChange={(e) => setFtes(parseFloat(e.target.value) || 0)}
+              <input type="text" inputMode="decimal" value={fmtInput(ftes)} onChange={handleNumChange(setFtes)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-socium-secondary focus:border-transparent text-sm" />
             </div>
           </div>
@@ -140,8 +156,7 @@ export default function AIContactCenterROI() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-socium-accent text-sm">$</span>
-                <input type="number" step="100" value={aiMonthlyCost}
-                  onChange={(e) => setAiMonthlyCost(parseFloat(e.target.value) || 0)}
+                <input type="text" inputMode="numeric" value={fmtInput(aiMonthlyCost)} onChange={handleNumChange(setAiMonthlyCost)}
                   className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-socium-secondary focus:border-transparent text-sm" />
               </div>
               <p className="text-xs text-socium-accent mt-1">Total monthly cost of the AI platform (licensing, usage, etc.)</p>
